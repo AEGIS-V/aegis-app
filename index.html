@@ -3,7 +3,7 @@
 <head>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'>
-    <title>AEGIS</title><link rel="apple-touch-icon" href="icon.png">
+    <title>AEGIS</title>
     <style>
         *{box-sizing:border-box;margin:0;padding:0;}
         html,body{width:100%;height:100dvh;background-color:#000;overflow:hidden;}
@@ -19,7 +19,7 @@
             position: relative;
         }
         
-        /* Main Sliding Menu */
+        /* Main Sliding Menu (Left to Right) */
         #menuOverlay{
             position:fixed; top:0; left:-100%; width:100%; height:100%;
             background:#000; border: 2px solid #00ff33; z-index:1000;
@@ -30,11 +30,12 @@
             position:absolute; top:20px; right:20px; font-size:30px; 
             color:#00ff33; cursor:pointer;
         }
+        /* Settings Cog Position */
         .cog-btn{
             position:absolute; bottom:30px; right:30px; cursor:pointer; color:#00ff33;
         }
 
-        /* Settings Pane */
+        /* Settings Pane (Bottom to Top) */
         #settingsPane{
             position:fixed; top:100%; left:0; width:100%; height:100%;
             background:#000; border: 2px solid #00ff33; z-index:2000;
@@ -69,6 +70,8 @@
             border:1px solid #00ff33; border-radius:20px;
             box-shadow: 0 0 5px rgba(0, 255, 51, 0.2);
         }
+        /* Primary AI color fixed to Red */
+        .ai-msg { color: #ff0000; } 
         
         .input-wrapper{flex-shrink:0;width:100%;}
         .input-area{
@@ -129,6 +132,7 @@
         </div>
     </div>
     <script>
+        // Menu Logic
         const overlay = document.getElementById('menuOverlay');
         const pane = document.getElementById('settingsPane');
         
@@ -138,6 +142,7 @@
         document.getElementById('openSettings').onclick = () => pane.classList.add('active');
         document.getElementById('closeSettings').onclick = () => pane.classList.remove('active');
 
+        // Existing Logic
         const output = document.getElementById('output');
         const input = document.getElementById('in');
         const sendBtn = document.getElementById('send');
@@ -161,7 +166,10 @@
                 sendBtn.style.display = 'none';
                 
                 setTimeout(() => {
-                    output.innerHTML += `<div class='message'>A.E.G.I.S: Processing "${val}"... Link verified.</div>`;
+                    const aiDiv = document.createElement('div');
+                    aiDiv.className = 'message ai-msg';
+                    aiDiv.innerText = `A.E.G.I.S: Processing "${val}"... Link verified.`;
+                    output.appendChild(aiDiv);
                     output.scrollTop = output.scrollHeight;
                 }, 600);
             }
