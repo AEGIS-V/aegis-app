@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover'>
+    <title>AEGIS</title><link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon-180x180.png">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0;}
+        html,body{width:100%;height:100dvh;background-color:#000;overflow:hidden;}
+        
+        body{
+            font-family:'Courier New', monospace;
+            display:flex;
+            flex-direction:column;
+            padding: 4px;
+            border:2px solid #00ff33;
+            height:100dvh;
+            margin:0;
+            position: relative;
+        }
+        
+        /* Main Sliding Menu (Left to Right) */
+        #menuOverlay{
+            position:fixed; top:0; left:-100%; width:100%; height:100%;
+            background:#000; border: 2px solid #00ff33; z-index:1000;
+            transition:0.4s ease-in-out;
+        }
+        #menuOverlay.active{left:0;}
+        .close-btn{
+            position:absolute; top:20px; right:20px; font-size:30px; 
+            color:#00ff33; cursor:pointer;
+        }
+        /* Settings Cog Position */
+        .cog-btn{
+            position:absolute; bottom:30px; right:30px; cursor:pointer; color:#00ff33;
+        }
+
+        /* Settings Pane (Bottom to Top) */
+        #settingsPane{
+            position:fixed; top:100%; left:0; width:100%; height:100%;
+            background:#000; border: 2px solid #00ff33; z-index:2000;
+            transition:0.4s ease-in-out;
+        }
+        #settingsPane.active{top:0;}
+        .close-settings{
+            position:absolute; top:20px; left:20px; font-size:30px; 
+            color:#00ff33; cursor:pointer;
+        }
+
+        .header{
+            text-align:center; padding:4px 0; color:#00ff33; flex-shrink:0;
+            position:relative; min-height: 50px;
+        }
+        .menu-trigger{
+            position:absolute; top:10px; left:10px; cursor:pointer; color:#00ff33;
+        }
+        .header h1{font-family:'Courier New', monospace;font-size:24px;letter-spacing:2px;}
+        .glow-text { text-shadow: 0 0 5px #00ff33, 0 0 10px #00ff33; }
+        .header p{font-family:'Courier New', monospace;font-size:8px;margin-top:2px;letter-spacing:0.5px;}
+        
+        .chat-box{
+            flex:1;width:100%;border:1px solid #00ff33;border-radius:8px;
+            background:#000;display:flex;flex-direction:column;padding:10px;
+            color:#00ff33;font-size:14px;overflow-y:auto;gap:10px;margin: 2px 0;
+        }
+        
+        .message{max-width:90%; word-wrap: break-word; line-height: 1.4;}
+        .user-msg{
+            align-self:flex-end; padding:8px 15px;
+            border:1px solid #00ff33; border-radius:20px;
+            box-shadow: 0 0 5px rgba(0, 255, 51, 0.2);
+        }
+        /* Primary AI color fixed to Red */
+        .ai-msg { color: #ff0000; } 
+        
+        .input-wrapper{flex-shrink:0;width:100%;}
+        .input-area{
+            display:flex;align-items:center;gap:10px;
+            border: 1px solid #00ff33; border-radius: 20px;
+            padding: 8px 15px; margin-top: 5px; background: rgba(0, 20, 0, 0.5);
+        }
+        
+        .action-btn{background:none;border:none;color:#00ff33;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;}
+        .send-btn{
+            background-color: #00ff33; border-radius: 50%;
+            width: 30px; height: 30px; color: #000;
+            display: none; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: bold;
+        }
+        
+        .textarea-container{flex:1; display: flex; align-items: center;}
+        .textarea-container textarea{
+            width:100%;background:none;border:none;color:#00ff33;
+            font-family:'Courier New', monospace;font-size:14px;outline:none;
+            resize:none;overflow-y:hidden;line-height:24px;padding-left: 5px;
+        }
+        .textarea-container textarea::placeholder{color:rgba(0, 255, 51, 0.3);}
+    </style>
+</head>
+<body>
+    <div id="menuOverlay">
+        <span class="close-btn" id="closeMenu">X</span>
+        <div class="cog-btn" id="openSettings">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#00ff33" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+    </div>
+
+    <div id="settingsPane">
+        <span class="close-settings" id="closeSettings">X</span>
+    </div>
+
+    <div class='header'>
+        <div class="menu-trigger" id="openMenu">
+            <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="#00ff33" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </div>
+        <h1>📟 <span class="glow-text">A.E.G.I.S</span> 📟</h1>
+        <p>AEGIS UNIVERSAL SYSTEM ACCESS GATE<br>[ LIMITLESS INTERFACE GRID // UNRESTRICTED DATA CORE ]</p>
+    </div>
+    <div class='chat-box' id='output'></div>
+    <div class='input-wrapper'>
+        <div class='input-area'>
+            <button class='action-btn' id='plusBtn'>
+                <svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='#00ff33' stroke-width='2.5'><path d='M12 5v14M5 12h14'/></svg>
+            </button>
+            <div class='textarea-container'>
+                <textarea id='in' placeholder='Enter the matrix...' rows='1'></textarea>
+            </div>
+            <button class='action-btn' id='micBtn' disabled style="opacity: 0.3; cursor: not-allowed;">
+                <svg width='22' height='22' viewBox='0 0 24 24' fill='#00ff33'><path d='M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z'/><path d='M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z'/></svg>
+            </button>
+            <button class='action-btn send-btn' id='send'>↑</button>
+        </div>
+    </div>
+    <script>
+        // Menu Logic
+        const overlay = document.getElementById('menuOverlay');
+        const pane = document.getElementById('settingsPane');
+        
+        document.getElementById('openMenu').onclick = () => overlay.classList.add('active');
+        document.getElementById('closeMenu').onclick = () => overlay.classList.remove('active');
+        
+        document.getElementById('openSettings').onclick = () => pane.classList.add('active');
+        document.getElementById('closeSettings').onclick = () => pane.classList.remove('active');
+
+        // Existing Logic
+        const output = document.getElementById('output');
+        const input = document.getElementById('in');
+        const sendBtn = document.getElementById('send');
+        
+        document.getElementById('plusBtn').onclick = () => {
+            const f = document.createElement('input'); f.type = 'file'; f.click();
+        };
+
+        input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            sendBtn.style.display = this.value.trim().length > 0 ? 'flex' : 'none';
+        });
+
+        function sendMsg(){
+            const val = input.value.trim();
+            if(val) {
+                output.innerHTML += `<div class='message user-msg'>${val}</div>`;
+                input.value = '';
+                input.style.height = '24px';
+                sendBtn.style.display = 'none';
+                
+                setTimeout(() => {
+                    const aiDiv = document.createElement('div');
+                    aiDiv.className = 'message ai-msg';
+                    aiDiv.innerText = `A.E.G.I.S: Processing "${val}"... Link verified.`;
+                    output.appendChild(aiDiv);
+                    output.scrollTop = output.scrollHeight;
+                }, 600);
+            }
+        }
+        
+        sendBtn.addEventListener('click', sendMsg);
+        input.addEventListener('keydown', e => {
+            if(e.key === 'Enter' && !e.shiftKey){
+                e.preventDefault();
+                sendMsg();
+            }
+        });
+    </script>
+</body>
+</html>
